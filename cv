@@ -1,0 +1,133 @@
+package org.example;
+
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.geom.PageSize;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.canvas.draw.SolidLine;
+import com.itextpdf.layout.Document;
+// Gerekli importu ekliyoruz
+import com.itextpdf.layout.borders.SolidBorder;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.layout.element.LineSeparator;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Text;
+import com.itextpdf.layout.properties.TextAlignment;
+import com.itextpdf.layout.properties.UnitValue;
+
+import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
+
+public class Main {
+
+    public static void main(String[] args) throws FileNotFoundException, MalformedURLException {
+        // --- 1. DOSYA OLUŞTURMA ---
+        String path = "src/main/PDF-Dosya/ornek_duzenli.pdf";
+        PdfWriter pdfWriter = new PdfWriter(path);
+        PdfDocument pdfDocument = new PdfDocument(pdfWriter);
+        // A4 boyutunda bir doküman oluşturuyoruz.
+        Document document = new Document(pdfDocument, PageSize.A4);
+        document.setMargins(30, 30, 30, 30); // Sayfa kenar boşlukları
+
+        // --- 2. FOTOĞRAF EKLEME ---
+        String imagePath = "src/main/Images/Berathannn.jpg";
+        Image image = new Image(ImageDataFactory.create(imagePath));
+        // Fotoğrafı sağ üste konumlandırıyoruz
+        image.scaleToFit(100f, 100f)
+                .setFixedPosition(pdfDocument.getDefaultPageSize().getWidth() - 130, pdfDocument.getDefaultPageSize().getHeight() - 130);
+        document.add(image);
+
+        // --- 3. BAŞLIK BİLGİLERİ (İSİM) ---
+        Paragraph header = new Paragraph("Burak Kaan")
+                .setFontSize(28)
+                .setFontColor(ColorConstants.DARK_GRAY)
+                .setBold()
+                .setTextAlignment(TextAlignment.LEFT);
+        document.add(header);
+
+        // İsim altına ayırıcı bir çizgi ekliyoruz
+        LineSeparator ls = new LineSeparator(new SolidLine(1f));
+        ls.setMarginTop(10);
+        document.add(ls);
+
+        // --- 4. BÖLÜMLERİ EKLEME ---
+        document.add(createSectionTitle("Iletisim Bilgileri"));
+        document.add(createContactInfo("Telefon:", "0555 890 15 68"));
+        document.add(createContactInfo("E-posta:", "karakartal@samp.com"));
+        document.add(createContactInfo("Adres:", "Sakarya Tatangalar Sokagi"));
+
+        document.add(createSectionTitle("Kariyer Hedefi"));
+        document.add(new Paragraph("Besiktas amigosu olmak.").setMarginLeft(10));
+
+        document.add(createSectionTitle("Is Deneyimi"));
+        document.add(createExperienceEntry("Bankaci", "2024 - 2026", ""));
+        document.add(createExperienceEntry("Kasiyer", "2021 - 2023", "LC Waikiki"));
+        document.add(createExperienceEntry("Tekstil Calisani", "2021 - 2023", "Pelo Tekstil"));
+
+
+        document.add(createSectionTitle("Akademik Gecmis"));
+        document.add(createExperienceEntry("Ekonometri (Lisans)", "2015 - 2020", "Okan Üniversitesi"));
+
+        document.add(createSectionTitle("Yetkinlikler ve Yabanci Diller"));
+        Paragraph skills = new Paragraph()
+                .add("Karmasik Problemleri Analiz Edebilme\n")
+                .add("Cözüm Uretebilme\n")
+                .add("Olaganüstü Durum Kurtarma")
+                .setMarginLeft(10);
+        document.add(skills);
+
+        // Diller için ayrı bir paragraf
+        Paragraph languages = new Paragraph()
+                .add(new Text("Ingilizce: ").setBold())
+                .add("Ileri Düzey\n")
+                .add(new Text("Almanca: ").setBold())
+                .add("Baslangic Seviyesi\n")
+                .add(new Text("Fransızca: ").setBold())
+                .add("Orta Seviye")
+                .setMarginLeft(10).setMarginTop(10);
+        document.add(languages);
+
+
+        // --- 5. DOKÜMANI KAPATMA ---
+        document.close();
+        System.out.println("Düzenli PDF dosyası başarıyla oluşturuldu: " + path);
+    }
+
+    // Bölüm başlığı oluşturan yardımcı metot
+    private static Paragraph createSectionTitle(String title) {
+        return new Paragraph(title)
+                .setFontSize(16)
+                .setFontColor(ColorConstants.BLUE)
+                .setBold()
+                .setMarginTop(20)
+                .setMarginBottom(10)
+                .setTextAlignment(TextAlignment.LEFT)
+                .setWidth(UnitValue.createPercentValue(100))
+                // HATA BURADA DÜZELTİLDİ
+                .setBorderBottom(new SolidBorder(0.5f)); // Başlığın altına ince bir çizgi
+    }
+
+    // İletişim bilgilerini (ör: Telefon: 123) formatlayan yardımcı metot
+    private static Paragraph createContactInfo(String label, String value) {
+        Paragraph p = new Paragraph();
+        p.add(new Text(label).setBold().setFontColor(ColorConstants.DARK_GRAY));
+        p.add(" " + value);
+        p.setMarginLeft(10);
+        p.setFontSize(10);
+        return p;
+    }
+
+    // İş ve okul deneyimi girdisi oluşturan yardımcı metot
+    private static Paragraph createExperienceEntry(String title, String date, String company) {
+        Paragraph p = new Paragraph();
+        p.add(new Text(title).setBold().setFontSize(12));
+        if (company != null && !company.isEmpty()) {
+            p.add(new Text(" - " + company).setItalic().setFontSize(11));
+        }
+        p.add(new Text("\n" + date).setFontColor(ColorConstants.GRAY).setFontSize(10));
+        p.setMarginLeft(10);
+        p.setMarginBottom(10);
+        return p;
+    }
+}
